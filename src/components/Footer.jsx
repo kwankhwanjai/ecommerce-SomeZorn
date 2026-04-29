@@ -39,7 +39,7 @@ const Footer = () => {
         <div className="col-span-full">
           <hr />
           <p className="py-5 text-sm text-center">
-            Copyright 2026@ forever.com - All Right
+            Copyright 2026@ himari.oork@gmail.com - All Right
           </p>
         </div>
       </div>
