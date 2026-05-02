@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 const Login = () => {
   const [currentState, setCurrentState] = useState("Sign Up");
@@ -7,66 +8,103 @@ const Login = () => {
     event.preventDefault();
   };
 
+  const isLogin = currentState === "Login";
+
   return (
-    <form
-      onSubmit={onSubmitHandler}
-      className="flex flex-col items-center w-[90%] sm:max-w-96 m-auto mt-14 gap-4 text-gray-800"
-    >
-      <div className="flex items-center justify-center gap-2 mb-2 mt-10 w-full">
-        <p className="prata-regular text-3xl">{currentState}</p>
-        <hr className="border-none h-[1.5px] w-8 bg-gray-800" />
-      </div>
-
-      {currentState === "Login" ? null : (
-        <input
-          type="text"
-          className="w-full px-3 py-2 border border-gray-800"
-          placeholder="Name"
-          required
-        />
-      )}
-
-      <input
-        type="email"
-        className="w-full px-3 py-2 border border-gray-800"
-        placeholder="Email"
-        required
-      />
-
-      <input
-        type="password"
-        className="w-full px-3 py-2 border border-gray-800"
-        placeholder="Password"
-        required
-      />
-
-      <div className="w-full flex justify-between text-sm mt-[-8px]">
-        <p className="cursor-pointer">Forgot your password?</p>
-
-        {currentState === "Login" ? (
-          <p
-            onClick={() => setCurrentState("Sign Up")}
-            className="cursor-pointer"
-          >
-            Create account
+    <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
+      <form onSubmit={onSubmitHandler} className="w-full max-w-[390px]">
+        <div className="mb-10 text-center">
+          <p className="mb-3 text-xs uppercase tracking-[0.4em] text-gray-400">
+            Account
           </p>
-        ) : (
-          <p
-            onClick={() => setCurrentState("Login")}
-            className="cursor-pointer"
-          >
-            Login Here
-          </p>
-        )}
-      </div>
 
-      <button
-        type="submit"
-        className="bg-black text-white font-light px-8 py-2 mt-4"
-      >
-        {currentState === "Login" ? "Sign In" : "Sign Up"}
-      </button>
-    </form>
+          <AnimatePresence mode="wait">
+            <motion.h2
+              key={currentState}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="prata-regular text-3xl text-gray-900 tracking-wide"
+            >
+              {currentState}
+            </motion.h2>
+          </AnimatePresence>
+
+          <p className="mt-3 text-sm text-gray-500">
+            {isLogin
+              ? "Welcome back. Please sign in."
+              : "Create your account to get started."}
+          </p>
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentState}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="space-y-4"
+          >
+            {!isLogin && (
+              <input
+                type="text"
+                placeholder="Full name"
+                className="w-full rounded-lg border border-gray-200 bg-white/60 px-4 py-3 text-sm outline-none transition duration-200 placeholder:text-gray-400 focus:border-black focus:bg-white"
+                required
+              />
+            )}
+
+            <input
+              type="email"
+              placeholder="Email address"
+              className="w-full rounded-lg border border-gray-200 bg-white/60 px-4 py-3 text-sm outline-none transition duration-200 placeholder:text-gray-400 focus:border-black focus:bg-white"
+              required
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              className="w-full rounded-lg border border-gray-200 bg-white/60 px-4 py-3 text-sm outline-none transition duration-200 placeholder:text-gray-400 focus:border-black focus:bg-white"
+              required
+            />
+          </motion.div>
+        </AnimatePresence>
+
+        <div className="mt-6 flex items-center justify-between text-xs text-gray-500">
+          <button type="button" className="transition hover:text-black">
+            Forgot password?
+          </button>
+
+          {isLogin ? (
+            <button
+              type="button"
+              onClick={() => setCurrentState("Sign Up")}
+              className="rounded-lg px-2 py-1 transition hover:bg-gray-100 hover:text-black"
+            >
+              Create account
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setCurrentState("Login")}
+              className="rounded-lg px-2 py-1 transition hover:bg-gray-100 hover:text-black"
+            >
+              Login here
+            </button>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          className="mt-10 w-full rounded-lg py-3 text-sm uppercase tracking-[0.2em] text-white transition duration-200 hover:opacity-90 active:scale-[0.98]"
+          style={{ backgroundColor: "#A3B565" }}
+        >
+          {currentState === "Login" ? "Sign In" : "Sign Up"}
+        </button>
+      </form>
+    </div>
   );
 };
 
