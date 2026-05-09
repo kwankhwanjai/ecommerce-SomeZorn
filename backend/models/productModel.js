@@ -1,0 +1,17 @@
+import mongoose from "mongoose";
+
+const productSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  price: { type: Number, required: true },
+  imageUrl: { type: Array, required: true },
+  category: { type: String, required: true },
+  subCategory: { type: String, required: true },
+  sizes: { type: Array, required: true }, // ✅ ใช้ตัวนี้
+  bestseller: { type: Boolean },
+  date: { type: Number, required: true }, // 🔥 แก้ require → required
+});
+
+const productModel =
+  mongoose.model.product || mongoose.model("Product", productSchema);
+export default productModel;
