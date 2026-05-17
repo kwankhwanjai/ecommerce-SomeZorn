@@ -8,11 +8,9 @@ const NewsletterBox = () => {
   return (
     <div className="text-center">
       <p className="text-2xl font-medium text-gray-800">
-        Subscribe now & get 10% off
+        Curated vintage and secondhand pieces
       </p>
-      <p className="text-gray-400 mt-3">
-        Lorem ipsum is simply text of printing and typesetting industry.
-      </p>
+      <p className="text-gray-400 mt-3">updated with every new collection.</p>
       <form
         onSubmit={onSubmitHandler}
         className="w-full sm:w-1/2 flex items-center gap-3 mx-auto my-6 border pl-3 rounded-md overflow-hidden"
