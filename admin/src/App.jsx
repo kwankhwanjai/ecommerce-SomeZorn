@@ -6,6 +6,8 @@ import Add from "./pages/Add";
 import List from "./pages/List";
 import Order from "./pages/Order";
 import Login from "./components/Login";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
   const [token, setToken] = useState(
@@ -17,6 +19,8 @@ const App = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen">
+      <ToastContainer />
+
       {token === "" ? (
         <Login setToken={setToken} />
       ) : (
