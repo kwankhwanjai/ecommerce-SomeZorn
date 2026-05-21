@@ -1,8 +1,9 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { currency } from "../App";
+import { toast } from "react-toastify";
 
-const List = () => {
+const List = ({ token }) => {
   const [list, setList] = useState([]);
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -16,9 +17,27 @@ const List = () => {
       }
     } catch (error) {
       console.log(error);
+      toast.error(error.message);
     }
   };
-
+  const removeProduct = async (id) => {
+    try {
+      const response = await axios.post(
+        backendUrl + "/api/product/remove",
+        { id },
+        { headers: { token } },
+      );
+      if (response.data.success) {
+        toast.success(response.data.message);
+        await fetchList();
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    }
+  };
   useEffect(() => {
     fetchList();
   }, []);
@@ -66,7 +85,10 @@ const List = () => {
               {item.price}
             </p>
 
-            <p className="text-center text-red-500 cursor-pointer hover:text-red-700 font-semibold">
+            <p
+              onClick={() => removeProduct(item._id)}
+              className="text-center text-red-500 cursor-pointer hover:text-red-700 font-semibold"
+            >
               X
             </p>
           </div>
