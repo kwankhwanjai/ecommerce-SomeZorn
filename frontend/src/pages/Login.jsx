@@ -1,14 +1,60 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { ShopContext } from "../context/ShopContext";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Login = () => {
-  const [currentState, setCurrentState] = useState("Sign Up");
+  const [currentState, setCurrentState] = useState("Login");
+  const { token, setToken, backendUrl, navigate } = useContext(ShopContext);
+
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+
+  const isLogin = currentState === "Login";
 
   const onSubmitHandler = async (event) => {
     event.preventDefault();
+
+    try {
+      let response;
+
+      if (currentState === "Sign Up") {
+        response = await axios.post(backendUrl + "/api/user/register", {
+          name,
+          email,
+          password,
+        });
+      } else {
+        response = await axios.post(backendUrl + "/api/user/login", {
+          email,
+          password,
+        });
+      }
+
+      if (response.data.success) {
+        setToken(response.data.token);
+        localStorage.setItem("token", response.data.token);
+        toast.success(isLogin ? "Login successful" : "Account created");
+
+        if (navigate) {
+          navigate("/");
+        }
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response?.data?.message || "Something went wrong");
+    }
   };
 
-  const isLogin = currentState === "Login";
+  useEffect(() => {
+    if (token) {
+      navigate("/");
+    }
+  }, [token]);
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
@@ -49,6 +95,8 @@ const Login = () => {
           >
             {!isLogin && (
               <input
+                onChange={(e) => setName(e.target.value)}
+                value={name}
                 type="text"
                 placeholder="Full name"
                 className="w-full rounded-lg border border-gray-200 bg-white/60 px-4 py-3 text-sm outline-none transition duration-200 placeholder:text-gray-400 focus:border-black focus:bg-white"
@@ -57,15 +105,21 @@ const Login = () => {
             )}
 
             <input
+              onChange={(e) => setEmail(e.target.value)}
+              value={email}
               type="email"
               placeholder="Email address"
+              autoComplete="username"
               className="w-full rounded-lg border border-gray-200 bg-white/60 px-4 py-3 text-sm outline-none transition duration-200 placeholder:text-gray-400 focus:border-black focus:bg-white"
               required
             />
 
             <input
+              onChange={(e) => setPassword(e.target.value)}
+              value={password}
               type="password"
               placeholder="Password"
+              autoComplete={isLogin ? "current-password" : "new-password"}
               className="w-full rounded-lg border border-gray-200 bg-white/60 px-4 py-3 text-sm outline-none transition duration-200 placeholder:text-gray-400 focus:border-black focus:bg-white"
               required
             />
@@ -101,7 +155,7 @@ const Login = () => {
           className="mt-10 w-full rounded-lg py-3 text-sm uppercase tracking-[0.2em] text-white transition duration-200 hover:opacity-90 active:scale-[0.98]"
           style={{ backgroundColor: "#A3B565" }}
         >
-          {currentState === "Login" ? "Sign In" : "Sign Up"}
+          {isLogin ? "Sign In" : "Sign Up"}
         </button>
       </form>
     </div>

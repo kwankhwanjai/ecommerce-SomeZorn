@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
 import Title from "../components/Title";
-import ProductItem from "../components/Productitem";
+import ProductItem from "../components/ProductItem";
 
 const Collection = () => {
   const { products, search, showSearch } = useContext(ShopContext);
@@ -14,6 +14,7 @@ const Collection = () => {
 
   const toggleCategory = (e) => {
     const value = e.target.value;
+
     setCategory((prev) =>
       prev.includes(value)
         ? prev.filter((item) => item !== value)
@@ -23,6 +24,7 @@ const Collection = () => {
 
   const toggleSubCategory = (e) => {
     const value = e.target.value;
+
     setSubCategory((prev) =>
       prev.includes(value)
         ? prev.filter((item) => item !== value)
@@ -31,7 +33,7 @@ const Collection = () => {
   };
 
   const applyFilter = () => {
-    let productsCopy = products.slice();
+    let productsCopy = products ? [...products] : [];
 
     if (showSearch && search) {
       productsCopy = productsCopy.filter((item) =>
@@ -71,6 +73,7 @@ const Collection = () => {
       <div className="flex flex-col sm:flex-row gap-6 sm:gap-10">
         <aside className="sm:w-56 sm:shrink-0">
           <button
+            type="button"
             onClick={() => setShowFilter(!showFilter)}
             className="w-full flex items-center justify-between text-base sm:text-xl font-semibold py-3"
           >
@@ -131,6 +134,7 @@ const Collection = () => {
               <div className="text-xl sm:text-2xl">
                 <Title text1="ALL" text2="COLLECTIONS" />
               </div>
+
               <p className="mt-1 text-sm text-gray-500">
                 {filteredProducts.length} items
               </p>
@@ -156,8 +160,8 @@ const Collection = () => {
               {filteredProducts.map((item) => (
                 <ProductItem
                   key={item._id}
-                  name={item.name}
                   id={item._id}
+                  name={item.name}
                   price={item.price}
                   image={item.imageUrl || item.image}
                 />
