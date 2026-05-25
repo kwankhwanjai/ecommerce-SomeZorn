@@ -9,24 +9,27 @@ const LatestCollection = () => {
 
   useEffect(() => {
     setLatestProducts(products.slice(0, 10));
-  }, []);
+  }, [products]); // ← แก้ตรงนี้
 
   return (
     <div className="my-10">
-      <div className="text-center py-8 text-3xl">
-        <Title text1={"SOMEZORN  "} text2={" COLLECTION"} />
-        <p className="w-3/4 m-auto text-xs sm:text-sm md:text-base text-gray-600">
+      {/* Title */}
+      <div className="py-8 text-center text-3xl">
+        <Title text1={"SOMEZORN"} text2={" COLLECTION"} />
+
+        <p className="m-auto w-3/4 text-xs text-gray-600 sm:text-sm md:text-base">
           “From one closet to another, fashion never dies.
           クローゼットからクローゼットへ、ファッションは永遠。”
         </p>
       </div>
-      {/*RENDERING PRODUCT*/}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 gap-y-6">
-        {latestProducts.map((item, index) => (
+
+      {/* Product */}
+      <div className="grid grid-cols-2 gap-4 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        {latestProducts.map((item) => (
           <ProductItem
-            key={index}
+            key={item._id}
             id={item._id}
-            image={item.imageUrl || item.image}
+            image={item.imageUrl} // backend ใช้อันนี้
             name={item.name}
             price={item.price}
           />
@@ -35,4 +38,5 @@ const LatestCollection = () => {
     </div>
   );
 };
+
 export default LatestCollection;
