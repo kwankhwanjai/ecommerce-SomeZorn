@@ -3,19 +3,36 @@ import { assets } from "../assets/assets";
 
 const Navbar = ({ setToken }) => {
   return (
-    <div className="flex items-center justify-between px-6 md:px-10 py-4 bg-white shadow-sm">
-      <img className="w-[110px] object-contain" src={assets.logo} alt="logo" />
+    <header className="h-[68px] border-b border-gray-200/70 bg-white/70 backdrop-blur-xl">
+      <div className="flex h-full items-center justify-between px-4 md:px-8">
+        <div className="flex items-center gap-3">
+          <img
+            className="w-[84px] object-contain md:w-[96px]"
+            src={assets.logo}
+            alt="SomeZorn logo"
+          />
 
-      <button
-        onClick={() => {
-          localStorage.removeItem("token");
-          setToken("");
-        }}
-        className="bg-[#FCDD9D] hover:bg-[#F1642E] hover:text-white transition-all duration-300 text-[#504E76] px-6 py-2 rounded-full text-sm font-medium shadow-sm hover:shadow-md"
-      >
-        Logout
-      </button>
-    </div>
+          <div className="hidden sm:block">
+            <p className="text-[10px] uppercase tracking-[0.24em] text-gray-400">
+              Admin Panel
+            </p>
+            <h1 className="text-sm font-semibold text-gray-800 md:text-base">
+              SomeZorn Dashboard
+            </h1>
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+            localStorage.removeItem("token");
+            setToken("");
+          }}
+          className="rounded-full border border-gray-200 bg-white/70 px-4 py-2 text-xs font-medium text-gray-700 shadow-sm backdrop-blur-md transition-all duration-300 hover:bg-gray-900 hover:text-white md:px-5 md:text-sm"
+        >
+          Logout
+        </button>
+      </div>
+    </header>
   );
 };
 

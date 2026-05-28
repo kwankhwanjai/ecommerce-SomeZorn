@@ -1,6 +1,6 @@
+import axios from "axios";
 import React, { useState } from "react";
 import { assets } from "../assets/assets";
-import axios from "axios";
 import { toast } from "react-toastify";
 
 const Add = ({ token }) => {
@@ -14,8 +14,8 @@ const Add = ({ token }) => {
   const [name, setname] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("");
-  const [subCategory, setSubCategory] = useState("");
+  const [category, setCategory] = useState("Men");
+  const [subCategory, setSubCategory] = useState("Topwear");
   const [bestseller, setBestseller] = useState(false);
   const [sizes, setSizes] = useState([]);
 
@@ -46,6 +46,16 @@ const Add = ({ token }) => {
 
       if (response.data.success) {
         toast.success(response.data.message);
+
+        setname("");
+        setDescription("");
+        setPrice("");
+        setSizes([]);
+        setBestseller(false);
+        setImage1(false);
+        setImage2(false);
+        setImage3(false);
+        setImage4(false);
       } else {
         toast.error(response.data.message);
       }
@@ -54,180 +64,202 @@ const Add = ({ token }) => {
       toast.error(error.message);
     }
   };
-  return (
-    <form
-      onSubmit={onSubmitHandler}
-      className="w-full max-w-5xl text-[#111] space-y-5"
-    >
-      <div>
-        <h2 className="text-xl font-semibold">Add Product</h2>
 
-        <p className="text-sm text-gray-400">Manage your product information</p>
+  return (
+    <form onSubmit={onSubmitHandler} className="w-full max-w-5xl space-y-6">
+      <div>
+        <p className="text-[10px] uppercase tracking-[0.24em] text-gray-400">
+          Inventory
+        </p>
+
+        <h2 className="mt-1 text-2xl font-semibold text-gray-900">
+          Add New Product
+        </h2>
+
+        <p className="mt-1 text-sm text-gray-500">
+          Upload and manage your collection items.
+        </p>
       </div>
 
-      {/* Upload Images */}
-      <div>
-        <p className="mb-2 text-sm font-medium">Upload Images</p>
+      <div className="rounded-[28px] border border-gray-200/80 bg-white/70 p-5 shadow-sm backdrop-blur-xl md:p-7">
+        <div>
+          <p className="mb-3 text-sm font-medium text-gray-800">
+            Product Images
+          </p>
 
-        <div className="flex gap-2">
-          {[1, 2, 3, 4].map((item) => (
-            <label
-              key={item}
-              htmlFor={`image${item}`}
-              className="w-20 h-20 border border-gray-300 rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-50 transition"
-            >
-              <img
-                className="w-8 opacity-60"
-                src={
-                  item === 1 && image1
-                    ? URL.createObjectURL(image1)
-                    : item === 2 && image2
-                      ? URL.createObjectURL(image2)
-                      : item === 3 && image3
-                        ? URL.createObjectURL(image3)
-                        : item === 4 && image4
-                          ? URL.createObjectURL(image4)
-                          : assets.upload_area
-                }
-                alt=""
-              />
+          <div className="flex flex-wrap gap-3">
+            {[1, 2, 3, 4].map((item) => (
+              <label
+                key={item}
+                htmlFor={`image${item}`}
+                className="group flex h-24 w-24 cursor-pointer items-center justify-center overflow-hidden rounded-3xl border border-dashed border-gray-300 bg-gray-50/80 transition-all duration-300 hover:border-indigo-200 hover:bg-indigo-50/60"
+              >
+                <img
+                  className={`object-cover transition-all duration-300 ${
+                    (item === 1 && image1) ||
+                    (item === 2 && image2) ||
+                    (item === 3 && image3) ||
+                    (item === 4 && image4)
+                      ? "h-full w-full"
+                      : "w-7 opacity-50 group-hover:scale-105"
+                  }`}
+                  src={
+                    item === 1 && image1
+                      ? URL.createObjectURL(image1)
+                      : item === 2 && image2
+                        ? URL.createObjectURL(image2)
+                        : item === 3 && image3
+                          ? URL.createObjectURL(image3)
+                          : item === 4 && image4
+                            ? URL.createObjectURL(image4)
+                            : assets.upload_area
+                  }
+                  alt=""
+                />
+
+                <input
+                  type="file"
+                  id={`image${item}`}
+                  hidden
+                  onChange={(e) => {
+                    if (item === 1) setImage1(e.target.files[0]);
+                    if (item === 2) setImage2(e.target.files[0]);
+                    if (item === 3) setImage3(e.target.files[0]);
+                    if (item === 4) setImage4(e.target.files[0]);
+                  }}
+                />
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-8 grid gap-6">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_220px]">
+            <div>
+              <p className="mb-2 text-sm font-medium text-gray-800">
+                Product Name
+              </p>
 
               <input
-                type="file"
-                id={`image${item}`}
-                hidden
-                onChange={(e) => {
-                  if (item === 1) setImage1(e.target.files[0]);
-                  if (item === 2) setImage2(e.target.files[0]);
-                  if (item === 3) setImage3(e.target.files[0]);
-                  if (item === 4) setImage4(e.target.files[0]);
-                }}
+                onChange={(e) => setname(e.target.value)}
+                value={name}
+                type="text"
+                placeholder="Vintage denim jacket..."
+                className="w-full rounded-2xl border border-gray-200 bg-white/70 px-4 py-3 text-sm text-gray-900 outline-none transition-all duration-300 placeholder:text-gray-400 focus:border-indigo-200 focus:bg-white"
               />
-            </label>
-          ))}
-        </div>
-      </div>
+            </div>
 
-      {/* Product Name + Price */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_220px] gap-4 max-w-[700px]">
-        <div>
-          <p className="mb-2 text-sm font-medium">Product Name</p>
+            <div>
+              <p className="mb-2 text-sm font-medium text-gray-800">Price</p>
 
-          <input
-            onChange={(e) => setname(e.target.value)}
-            value={name}
-            type="text"
-            placeholder="Type here"
-            className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-black transition"
-          />
-        </div>
+              <input
+                onChange={(e) => setPrice(e.target.value)}
+                value={price}
+                type="number"
+                placeholder="00"
+                className="w-full rounded-2xl border border-gray-200 bg-white/70 px-4 py-3 text-sm text-gray-900 outline-none transition-all duration-300 placeholder:text-gray-400 focus:border-indigo-200 focus:bg-white"
+              />
+            </div>
+          </div>
 
-        <div>
-          <p className="mb-2 text-sm font-medium">Price</p>
+          <div>
+            <p className="mb-2 text-sm font-medium text-gray-800">
+              Description
+            </p>
 
-          <input
-            onChange={(e) => setPrice(e.target.value)}
-            value={price}
-            type="number"
-            placeholder="00"
-            className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-black transition"
-          />
-        </div>
-      </div>
+            <textarea
+              onChange={(e) => setDescription(e.target.value)}
+              value={description}
+              placeholder="Write product details..."
+              className="h-32 w-full resize-none rounded-2xl border border-gray-200 bg-white/70 px-4 py-3 text-sm text-gray-900 outline-none transition-all duration-300 placeholder:text-gray-400 focus:border-indigo-200 focus:bg-white"
+            />
+          </div>
 
-      {/* Description */}
-      <div>
-        <p className="mb-2 text-sm font-medium">Description</p>
+          <div className="flex flex-wrap gap-4">
+            <div>
+              <p className="mb-2 text-sm font-medium text-gray-800">Category</p>
 
-        <textarea
-          onChange={(e) => setDescription(e.target.value)}
-          value={description}
-          placeholder="Write content here"
-          className="w-full max-w-[700px] h-24 border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none resize-none focus:border-black transition"
-        />
-      </div>
+              <select
+                onChange={(e) => setCategory(e.target.value)}
+                value={category}
+                className="rounded-2xl border border-gray-200 bg-white/70 px-4 py-3 text-sm text-gray-900 outline-none transition-all duration-300 focus:border-indigo-200"
+              >
+                <option>Men</option>
+                <option>Women</option>
+                <option>Kids</option>
+              </select>
+            </div>
 
-      {/* Category */}
-      <div className="flex flex-wrap gap-4">
-        <div>
-          <p className="mb-2 text-sm font-medium">Category</p>
+            <div>
+              <p className="mb-2 text-sm font-medium text-gray-800">
+                Sub Category
+              </p>
 
-          <select
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full max-w-[320px] border border-gray-300 rounded-xl px-4 pr-10 py-2.5 text-sm outline-none focus:border-black transition bg-white"
+              <select
+                onChange={(e) => setSubCategory(e.target.value)}
+                value={subCategory}
+                className="rounded-2xl border border-gray-200 bg-white/70 px-4 py-3 text-sm text-gray-900 outline-none transition-all duration-300 focus:border-indigo-200"
+              >
+                <option>Topwear</option>
+                <option>Bottomwear</option>
+                <option>Winterwear</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <p className="mb-3 text-sm font-medium text-gray-800">
+              Product Size
+            </p>
+
+            <div className="flex flex-wrap gap-2">
+              {["S", "M", "L", "XL", "XXL"].map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() =>
+                    setSizes((prev) =>
+                      prev.includes(item)
+                        ? prev.filter((s) => s !== item)
+                        : [...prev, item],
+                    )
+                  }
+                  className={`rounded-2xl border px-4 py-2 text-sm font-medium transition-all duration-300 ${
+                    sizes.includes(item)
+                      ? "border-gray-900 bg-gray-900 text-white"
+                      : "border-gray-200 bg-white/70 text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <label
+            htmlFor="bestseller"
+            className="flex items-center gap-3 text-sm text-gray-700"
           >
-            <option>Men</option>
-            <option>Women</option>
-            <option>Kids</option>
-          </select>
-        </div>
+            <input
+              onChange={() => setBestseller((prev) => !prev)}
+              checked={bestseller}
+              type="checkbox"
+              id="bestseller"
+              className="h-4 w-4 accent-gray-900"
+            />
+            Add to bestseller collection
+          </label>
 
-        <div>
-          <p className="mb-2 text-sm font-medium">Sub Category</p>
-
-          <select
-            onChange={(e) => setSubCategory(e.target.value)}
-            className="w-full max-w-[320px] border border-gray-300 rounded-xl px-4 pr-10 py-2.5 text-sm outline-none focus:border-black transition bg-white"
-          >
-            <option>Topwear</option>
-            <option>Bottomwear</option>
-            <option>Winterwear</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Sizes */}
-      <div>
-        <p className="mb-2 text-sm font-medium">Product Size</p>
-
-        <div className="flex gap-2 flex-wrap">
-          {["S", "M", "L", "XL", "XXL"].map((item) => (
+          <div className="pt-2">
             <button
-              key={item}
-              type="button"
-              onClick={() =>
-                setSizes(
-                  (prev) =>
-                    prev.includes(item)
-                      ? prev.filter((s) => s !== item) // กดซ้ำ = เอาออก
-                      : [...prev, item], // ยังไม่มี = เพิ่ม
-                )
-              }
-              className={`px-4 py-1.5 border rounded-lg text-sm transition
-          ${
-            sizes.includes(item)
-              ? "bg-black text-white"
-              : "border-gray-300 hover:bg-black hover:text-white"
-          }`}
+              type="submit"
+              className="rounded-full bg-gray-900 px-7 py-3 text-sm font-medium tracking-wide text-white shadow-sm transition-all duration-300 hover:-translate-y-[1px] hover:bg-black hover:shadow-lg"
             >
-              {item}
+              ADD PRODUCT
             </button>
-          ))}
+          </div>
         </div>
       </div>
-
-      {/* Bestseller */}
-      <label
-        htmlFor="bestseller"
-        className="flex items-center gap-2 text-sm cursor-pointer"
-      >
-        <input
-          onChange={() => setBestseller((prev) => !prev)}
-          checked={bestseller}
-          type="checkbox"
-          id="bestseller"
-          className="accent-black"
-        />
-        Add to bestseller
-      </label>
-
-      {/* Submit */}
-      <button
-        type="submit"
-        className="bg-black text-white px-8 py-2.5 rounded-xl text-sm hover:opacity-90 transition"
-      >
-        ADD PRODUCT
-      </button>
     </form>
   );
 };
