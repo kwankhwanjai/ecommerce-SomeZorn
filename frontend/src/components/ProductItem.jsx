@@ -8,29 +8,42 @@ const ProductItem = ({ id, image, name, price }) => {
   const productImage = image?.[0] || "";
 
   return (
-    <Link to={`/product/${id}`} className="group block w-full">
-      <div className="w-full aspect-[4/5] overflow-hidden rounded-xl bg-[#f8f8f8]">
-        {productImage ? (
-          <img
-            src={productImage}
-            alt={name}
-            className="w-full h-full object-cover transition duration-300 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-gray-400 text-sm">
-            No image
-          </div>
-        )}
-      </div>
+    <Link
+      to={`/product/${id}`}
+      className="group block h-full transition duration-300"
+    >
+      <article className="flex h-full flex-col">
+        {/* Image */}
+        <div className="relative overflow-hidden rounded-2xl bg-[#f6f6f6] aspect-[4/5]">
+          {productImage ? (
+            <>
+              <img
+                src={productImage}
+                alt={name}
+                className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+              />
 
-      <div className="mt-3">
-        <p className="text-sm text-gray-800 line-clamp-2">{name}</p>
+              <div className="absolute inset-0 bg-black/0 transition duration-300 group-hover:bg-black/[0.03]" />
+            </>
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-gray-400">
+              No image
+            </div>
+          )}
+        </div>
 
-        <p className="mt-1 font-medium">
-          {currency}
-          {price}
-        </p>
-      </div>
+        {/* Info */}
+        <div className="flex flex-1 flex-col pt-3">
+          <h3 className="line-clamp-2 min-h-[42px] text-sm font-medium leading-5 text-gray-900">
+            {name}
+          </h3>
+
+          <p className="mt-2 text-sm font-semibold text-gray-900">
+            {currency}
+            {price}
+          </p>
+        </div>
+      </article>
     </Link>
   );
 };
