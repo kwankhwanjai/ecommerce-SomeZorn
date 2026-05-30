@@ -1,125 +1,249 @@
-import React, { useState, useContext } from "react";
+import React, { useContext, useState } from "react";
 import Title from "../components/Title";
 import CartTotal from "../components/CartTotal";
 import { assets } from "../assets/assets";
 import { ShopContext } from "../context/ShopContext";
+import { toast } from "react-toastify";
 
 const PlaceOrder = () => {
   const [method, setMethod] = useState("cod");
-  const { navigate } = useContext(ShopContext);
+  const [loading, setLoading] = useState(false);
+
+  const { navigate, cartItems = {}, products = [] } = useContext(ShopContext);
+
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    street: "",
+    city: "",
+    state: "",
+    zipcode: "",
+    country: "",
+    phone: "",
+  });
+
+  const cartCount = Object.values(cartItems).reduce((total, sizes) => {
+    return (
+      total +
+      Object.values(sizes || {}).reduce((sum, quantity) => sum + quantity, 0)
+    );
+  }, 0);
+
+  const hasCartItems = cartCount > 0 && products.length > 0;
 
   const inputClass =
-    "w-full rounded-xl border border-[#d8c8ad] bg-white px-4 py-3 text-sm text-[#3f3325] outline-none transition placeholder:text-[#9b8b73] focus:border-[#8f6f45] focus:ring-2 focus:ring-[#d9b26f]/30";
+    "w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:bg-white focus:ring-2 focus:ring-black/5 disabled:cursor-not-allowed disabled:opacity-60";
 
   const paymentClass = (type) =>
     `flex min-h-[54px] cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 transition ${
       method === type
-        ? "border-[#7a5b35] bg-[#f5eedc] shadow-[0_10px_25px_rgba(73,52,28,0.10)]"
-        : "border-[#d8c8ad] bg-white hover:border-[#8f6f45]"
+        ? "border-gray-900 bg-gray-100 shadow-sm"
+        : "border-gray-200 bg-white hover:border-gray-400"
     }`;
 
+  const onChangeHandler = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const validateForm = () => {
+    const requiredFields = Object.entries(formData);
+
+    for (const [key, value] of requiredFields) {
+      if (!value.trim()) {
+        toast.error("Please fill in all delivery information");
+        return false;
+      }
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(formData.email.trim())) {
+      toast.error("Please enter a valid email address");
+      return false;
+    }
+
+    if (formData.phone.trim().length < 8) {
+      toast.error("Please enter a valid phone number");
+      return false;
+    }
+
+    if (!hasCartItems) {
+      toast.error("Your cart is empty");
+      return false;
+    }
+
+    return true;
+  };
+
+  const onPlaceOrder = async () => {
+    if (loading) return;
+
+    if (!validateForm()) return;
+
+    try {
+      setLoading(true);
+
+      /*
+        ตอนนี้ยังไม่มี backend order/payment จริง
+        ถ้าทำ backend แล้ว ค่อยใส่ axios.post ตรงนี้ได้ เช่น:
+
+        await axios.post(
+          backendUrl + "/api/order/place",
+          { address: formData, paymentMethod: method },
+          { headers: { token } }
+        );
+      */
+
+      toast.success("Order placed successfully");
+      navigate("/orders");
+    } catch (error) {
+      console.log(error);
+      toast.error("Unable to place order. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fields = [
+    { name: "firstName", type: "text", placeholder: "First name" },
+    { name: "lastName", type: "text", placeholder: "Last name" },
+    { name: "email", type: "email", placeholder: "Email address" },
+    { name: "street", type: "text", placeholder: "Street address" },
+    { name: "city", type: "text", placeholder: "City" },
+    { name: "state", type: "text", placeholder: "State / Province" },
+    { name: "zipcode", type: "text", placeholder: "Zipcode" },
+    { name: "country", type: "text", placeholder: "Country" },
+    { name: "phone", type: "tel", placeholder: "Phone number" },
+  ];
+
   return (
-    <div className="border-t border-[#e7dcc8] px-2 pt-6 sm:px-4 sm:pt-12">
+    <main className="border-t border-gray-200 px-3 pt-6 sm:px-4 sm:pt-10">
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.15fr_0.85fr]">
-        {/* Left Side */}
-        <div className="rounded-[28px] border border-[#e5d8c2] bg-[#fffaf1] p-5 shadow-[0_18px_45px_rgba(73,52,28,0.08)] sm:p-8">
+        {/* Delivery Info */}
+        <section className="rounded-[28px] bg-[#f8f8fa] p-5 sm:p-8">
           <div className="mb-6">
-            <p className="mb-2 text-xs uppercase tracking-[0.35em] text-[#8f6f45]">
+            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.28em] text-gray-500">
               Checkout
             </p>
+
             <div className="text-xl sm:text-2xl">
-              <Title text1={"DELIVERY"} text2={"INFORMATION"} />
+              <Title text1="DELIVERY" text2="INFORMATION" />
             </div>
-            <p className="mt-2 text-sm text-[#7b6a55]">
-              Please fill in your delivery details carefully.
+
+            <p className="mt-2 text-sm text-gray-500">
+              Please fill in your delivery details carefully before placing your
+              order.
             </p>
           </div>
 
           <div className="flex flex-col gap-4">
             <div className="grid gap-4 sm:grid-cols-2">
-              <input
-                className={inputClass}
-                type="text"
-                placeholder="First name"
-              />
-              <input
-                className={inputClass}
-                type="text"
-                placeholder="Last name"
-              />
+              {fields.slice(0, 2).map((field) => (
+                <input
+                  key={field.name}
+                  {...field}
+                  value={formData[field.name]}
+                  onChange={onChangeHandler}
+                  disabled={loading}
+                  className={inputClass}
+                  required
+                />
+              ))}
             </div>
 
-            <input
-              className={inputClass}
-              type="email"
-              placeholder="Email address"
-            />
-            <input
-              className={inputClass}
-              type="text"
-              placeholder="Street address"
-            />
+            {fields.slice(2, 4).map((field) => (
+              <input
+                key={field.name}
+                {...field}
+                value={formData[field.name]}
+                onChange={onChangeHandler}
+                disabled={loading}
+                className={inputClass}
+                required
+              />
+            ))}
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <input className={inputClass} type="text" placeholder="City" />
-              <input
-                className={inputClass}
-                type="text"
-                placeholder="State / Province"
-              />
+              {fields.slice(4, 6).map((field) => (
+                <input
+                  key={field.name}
+                  {...field}
+                  value={formData[field.name]}
+                  onChange={onChangeHandler}
+                  disabled={loading}
+                  className={inputClass}
+                  required
+                />
+              ))}
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <input
-                className={inputClass}
-                type="number"
-                placeholder="Zipcode"
-              />
-              <input className={inputClass} type="text" placeholder="Country" />
+              {fields.slice(6, 8).map((field) => (
+                <input
+                  key={field.name}
+                  {...field}
+                  value={formData[field.name]}
+                  onChange={onChangeHandler}
+                  disabled={loading}
+                  className={inputClass}
+                  required
+                />
+              ))}
             </div>
 
             <input
+              {...fields[8]}
+              value={formData.phone}
+              onChange={onChangeHandler}
+              disabled={loading}
               className={inputClass}
-              type="tel"
-              placeholder="Phone number"
+              required
             />
           </div>
-        </div>
+        </section>
 
-        {/* Right Side */}
-        <div className="lg:sticky lg:top-6 lg:h-fit">
-          <div className="rounded-[28px] border border-[#e5d8c2] bg-white p-5 shadow-[0_18px_45px_rgba(73,52,28,0.08)] sm:p-7">
+        {/* Order Summary */}
+        <aside className="lg:sticky lg:top-6 lg:h-fit">
+          <div className="rounded-[28px] border border-gray-200 bg-white p-5 shadow-[0_18px_45px_rgba(0,0,0,0.04)] sm:p-7">
             <CartTotal />
 
-            <div className="mt-8 border-t border-[#eadfce] pt-7">
+            <div className="mt-8 border-t border-gray-200 pt-7">
               <div className="mb-4 text-lg sm:text-xl">
-                <Title text1={"PAYMENT"} text2={"METHOD"} />
+                <Title text1="PAYMENT" text2="METHOD" />
               </div>
 
               <div className="flex flex-col gap-3">
-                <div
+                <button
+                  type="button"
                   onClick={() => setMethod("stripe")}
                   className={paymentClass("stripe")}
+                  disabled={loading}
                 >
                   <span
                     className={`h-4 w-4 rounded-full border ${
                       method === "stripe"
-                        ? "border-[#3f3325] bg-[#3f3325]"
-                        : "border-[#b9a88f]"
+                        ? "border-gray-900 bg-gray-900"
+                        : "border-gray-300"
                     }`}
                   />
                   <img className="h-5" src={assets.stripe_logo} alt="Stripe" />
-                </div>
+                </button>
 
-                <div
+                <button
+                  type="button"
                   onClick={() => setMethod("razorpay")}
                   className={paymentClass("razorpay")}
+                  disabled={loading}
                 >
                   <span
                     className={`h-4 w-4 rounded-full border ${
                       method === "razorpay"
-                        ? "border-[#3f3325] bg-[#3f3325]"
-                        : "border-[#b9a88f]"
+                        ? "border-gray-900 bg-gray-900"
+                        : "border-gray-300"
                     }`}
                   />
                   <img
@@ -127,40 +251,50 @@ const PlaceOrder = () => {
                     src={assets.razorpay_logo}
                     alt="Razorpay"
                   />
-                </div>
+                </button>
 
-                <div
+                <button
+                  type="button"
                   onClick={() => setMethod("cod")}
                   className={paymentClass("cod")}
+                  disabled={loading}
                 >
                   <span
                     className={`h-4 w-4 rounded-full border ${
                       method === "cod"
-                        ? "border-[#3f3325] bg-[#3f3325]"
-                        : "border-[#b9a88f]"
+                        ? "border-gray-900 bg-gray-900"
+                        : "border-gray-300"
                     }`}
                   />
-                  <p className="text-sm font-semibold tracking-wide text-[#4b3a28]">
+                  <p className="text-sm font-semibold tracking-wide text-gray-800">
                     CASH ON DELIVERY
                   </p>
-                </div>
+                </button>
               </div>
 
               <button
-                onClick={() => navigate("/orders")}
-                className="mt-7 w-full rounded-full bg-[#3f3325] px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-[#7a5b35] active:scale-[0.98]"
+                type="button"
+                onClick={onPlaceOrder}
+                disabled={loading || !hasCartItems}
+                className="mt-7 w-full rounded-full bg-gray-900 px-8 py-3.5 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-gray-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Place Order
+                {loading ? "Placing Order..." : "Place Order"}
               </button>
 
-              <p className="mt-4 text-center text-xs text-[#8b7a65]">
-                Your order details will be confirmed before shipping.
-              </p>
+              {!hasCartItems ? (
+                <p className="mt-4 text-center text-xs text-red-500">
+                  Your cart is empty. Please add items before checkout.
+                </p>
+              ) : (
+                <p className="mt-4 text-center text-xs text-gray-500">
+                  Your order details will be confirmed before shipping.
+                </p>
+              )}
             </div>
           </div>
-        </div>
+        </aside>
       </div>
-    </div>
+    </main>
   );
 };
 

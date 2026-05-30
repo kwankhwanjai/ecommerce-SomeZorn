@@ -6,47 +6,82 @@ import { toast } from "react-toastify";
 
 const Login = () => {
   const [currentState, setCurrentState] = useState("Login");
-  const { token, setToken, backendUrl, navigate } = useContext(ShopContext);
-
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { token, setToken, backendUrl, navigate } = useContext(ShopContext);
 
   const isLogin = currentState === "Login";
+
+  const resetForm = () => {
+    setName("");
+    setEmail("");
+    setPassword("");
+  };
+
+  const switchMode = () => {
+    setCurrentState(isLogin ? "Sign Up" : "Login");
+    resetForm();
+  };
 
   const onSubmitHandler = async (event) => {
     event.preventDefault();
 
-    try {
-      let response;
+    if (loading) return;
 
-      if (currentState === "Sign Up") {
-        response = await axios.post(backendUrl + "/api/user/register", {
-          name,
-          email,
-          password,
-        });
-      } else {
-        response = await axios.post(backendUrl + "/api/user/login", {
-          email,
-          password,
-        });
-      }
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    if (!cleanEmail || !cleanPassword || (!isLogin && !cleanName)) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (cleanPassword.length < 8 && !isLogin) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const endpoint = isLogin
+        ? `${backendUrl}/api/user/login`
+        : `${backendUrl}/api/user/register`;
+
+      const payload = isLogin
+        ? {
+            email: cleanEmail,
+            password: cleanPassword,
+          }
+        : {
+            name: cleanName,
+            email: cleanEmail,
+            password: cleanPassword,
+          };
+
+      const response = await axios.post(endpoint, payload);
 
       if (response.data.success) {
-        setToken(response.data.token);
-        localStorage.setItem("token", response.data.token);
+        const userToken = response.data.token;
+
+        setToken(userToken);
+        localStorage.setItem("token", userToken);
+
         toast.success(isLogin ? "Login successful" : "Account created");
 
-        if (navigate) {
-          navigate("/");
-        }
+        navigate("/");
       } else {
-        toast.error(response.data.message);
+        toast.error(response.data.message || "Something went wrong");
       }
     } catch (error) {
       console.log(error);
       toast.error(error.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,111 +89,133 @@ const Login = () => {
     if (token) {
       navigate("/");
     }
-  }, [token]);
+  }, [token, navigate]);
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
-      <form onSubmit={onSubmitHandler} className="w-full max-w-[390px]">
-        <div className="mb-10 text-center">
-          <p className="mb-3 text-xs uppercase tracking-[0.4em] text-gray-400">
-            Account
-          </p>
+    <main className="flex min-h-[75vh] items-center justify-center border-t border-gray-200 px-4 py-14">
+      <section className="w-full max-w-[430px] rounded-[28px] border border-gray-200 bg-white px-5 py-8 shadow-[0_20px_60px_rgba(0,0,0,0.04)] sm:px-8 sm:py-10">
+        <form onSubmit={onSubmitHandler}>
+          {/* Header */}
+          <div className="mb-8 text-center">
+            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.35em] text-gray-400">
+              SOMEZORN
+            </p>
 
+            <AnimatePresence mode="wait">
+              <motion.h2
+                key={currentState}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.22, ease: "easeOut" }}
+                className="prata-regular text-3xl tracking-wide text-gray-900"
+              >
+                {currentState}
+              </motion.h2>
+            </AnimatePresence>
+
+            <p className="mx-auto mt-3 max-w-[300px] text-sm leading-6 text-gray-500">
+              {isLogin
+                ? "Sign in to continue your SomeZorn journey."
+                : "Create your account to discover curated second-hand pieces."}
+            </p>
+          </div>
+
+          {/* Fields */}
           <AnimatePresence mode="wait">
-            <motion.h2
+            <motion.div
               key={currentState}
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="prata-regular text-3xl text-gray-900 tracking-wide"
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+              className="min-h-[188px] space-y-4"
             >
-              {currentState}
-            </motion.h2>
+              {!isLogin && (
+                <label className="block">
+                  <span className="mb-2 block text-xs font-medium text-gray-600">
+                    Full name
+                  </span>
+                  <input
+                    onChange={(e) => setName(e.target.value)}
+                    value={name}
+                    type="text"
+                    placeholder="Enter your name"
+                    autoComplete="name"
+                    disabled={loading}
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:bg-white focus:ring-2 focus:ring-black/5 disabled:cursor-not-allowed disabled:opacity-60"
+                    required={!isLogin}
+                  />
+                </label>
+              )}
+
+              <label className="block">
+                <span className="mb-2 block text-xs font-medium text-gray-600">
+                  Email address
+                </span>
+                <input
+                  onChange={(e) => setEmail(e.target.value)}
+                  value={email}
+                  type="email"
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  disabled={loading}
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:bg-white focus:ring-2 focus:ring-black/5 disabled:cursor-not-allowed disabled:opacity-60"
+                  required
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-xs font-medium text-gray-600">
+                  Password
+                </span>
+                <input
+                  onChange={(e) => setPassword(e.target.value)}
+                  value={password}
+                  type="password"
+                  placeholder={
+                    isLogin ? "Enter your password" : "At least 8 characters"
+                  }
+                  autoComplete={isLogin ? "current-password" : "new-password"}
+                  disabled={loading}
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:bg-white focus:ring-2 focus:ring-black/5 disabled:cursor-not-allowed disabled:opacity-60"
+                  required
+                />
+              </label>
+            </motion.div>
           </AnimatePresence>
 
-          <p className="mt-3 text-sm text-gray-500">
-            {isLogin
-              ? "Welcome back. Please sign in."
-              : "Create your account to get started."}
-          </p>
-        </div>
+          {/* Actions */}
+          <div className="mt-5 flex items-center justify-between gap-4 text-xs text-gray-500">
+            <button
+              type="button"
+              disabled
+              className="cursor-not-allowed opacity-45"
+              title="Coming soon"
+            >
+              Forgot password?
+            </button>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentState}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="space-y-4"
+            <button
+              type="button"
+              onClick={switchMode}
+              disabled={loading}
+              className="rounded-lg px-2 py-1 font-medium transition hover:bg-gray-100 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isLogin ? "Create account" : "Login here"}
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-8 flex w-full items-center justify-center rounded-full bg-gray-900 px-6 py-3 text-sm font-medium uppercase tracking-[0.18em] text-white transition duration-200 hover:bg-gray-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {!isLogin && (
-              <input
-                onChange={(e) => setName(e.target.value)}
-                value={name}
-                type="text"
-                placeholder="Full name"
-                className="w-full rounded-lg border border-gray-200 bg-white/60 px-4 py-3 text-sm outline-none transition duration-200 placeholder:text-gray-400 focus:border-black focus:bg-white"
-                required
-              />
-            )}
-
-            <input
-              onChange={(e) => setEmail(e.target.value)}
-              value={email}
-              type="email"
-              placeholder="Email address"
-              autoComplete="username"
-              className="w-full rounded-lg border border-gray-200 bg-white/60 px-4 py-3 text-sm outline-none transition duration-200 placeholder:text-gray-400 focus:border-black focus:bg-white"
-              required
-            />
-
-            <input
-              onChange={(e) => setPassword(e.target.value)}
-              value={password}
-              type="password"
-              placeholder="Password"
-              autoComplete={isLogin ? "current-password" : "new-password"}
-              className="w-full rounded-lg border border-gray-200 bg-white/60 px-4 py-3 text-sm outline-none transition duration-200 placeholder:text-gray-400 focus:border-black focus:bg-white"
-              required
-            />
-          </motion.div>
-        </AnimatePresence>
-
-        <div className="mt-6 flex items-center justify-between text-xs text-gray-500">
-          <button type="button" className="transition hover:text-black">
-            Forgot password?
+            {loading ? "Please wait..." : isLogin ? "Sign In" : "Sign Up"}
           </button>
-
-          {isLogin ? (
-            <button
-              type="button"
-              onClick={() => setCurrentState("Sign Up")}
-              className="rounded-lg px-2 py-1 transition hover:bg-gray-100 hover:text-black"
-            >
-              Create account
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setCurrentState("Login")}
-              className="rounded-lg px-2 py-1 transition hover:bg-gray-100 hover:text-black"
-            >
-              Login here
-            </button>
-          )}
-        </div>
-
-        <button
-          type="submit"
-          className="mt-10 w-full rounded-lg py-3 text-sm uppercase tracking-[0.2em] text-white transition duration-200 hover:opacity-90 active:scale-[0.98]"
-          style={{ backgroundColor: "#A3B565" }}
-        >
-          {isLogin ? "Sign In" : "Sign Up"}
-        </button>
-      </form>
-    </div>
+        </form>
+      </section>
+    </main>
   );
 };
 
