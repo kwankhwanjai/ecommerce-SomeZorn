@@ -37,6 +37,18 @@ const ShopContextProvider = (props) => {
     }
 
     setCartItems(cartData);
+    if (token) {
+      try {
+        await axios.post(
+          backendUrl + "/api/cart/add",
+          { itemId, size },
+          { headers: { token } },
+        );
+      } catch (error) {
+        console.log(error);
+        toast.error(error.message);
+      }
+    }
   };
 
   const getCartCount = () => {
@@ -59,6 +71,12 @@ const ShopContextProvider = (props) => {
     if (!cartData[itemId]) return;
 
     cartData[itemId][size] = quantity;
+    setCartItems(cartData);
+    if (token) {
+      try {
+        await axios.post(backendUrl + "/api/cart/update", {});
+      } catch (error) {}
+    }
 
     if (quantity <= 0) {
       delete cartData[itemId][size];
@@ -67,8 +85,6 @@ const ShopContextProvider = (props) => {
         delete cartData[itemId];
       }
     }
-
-    setCartItems(cartData);
   };
 
   const getCartAmount = () => {
