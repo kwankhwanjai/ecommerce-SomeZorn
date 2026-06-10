@@ -1,7 +1,20 @@
-import { v2 as Cloudinary } from "cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 import productModel from "../models/productModel.js";
 
-// function for add product
+/**
+ * helper: safe JSON parse
+ */
+const safeJsonParse = (value, fallback = []) => {
+  try {
+    return JSON.parse(value || "[]");
+  } catch {
+    return fallback;
+  }
+};
+
+/**
+ * ADD PRODUCT
+ */
 const addProduct = async (req, res) => {
   try {
     const {
@@ -14,93 +27,153 @@ const addProduct = async (req, res) => {
       bestseller,
     } = req.body;
 
-    const image1 = req.files?.image1?.[0];
-    const image2 = req.files?.image2?.[0];
-    const image3 = req.files?.image3?.[0];
-    const image4 = req.files?.image4?.[0];
+    // 🔴 basic validation (important in real project)
+    if (!name || !price || !category) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields (name, price, category)",
+      });
+    }
 
-    const images = [image1, image2, image3, image4].filter(Boolean);
+    // 📦 handle images safely
+    const files = req.files || {};
+
+    const images = ["image1", "image2", "image3", "image4"]
+      .map((key) => files[key]?.[0])
+      .filter(Boolean);
 
     const imagesUrl = await Promise.all(
-      images.map(async (item) => {
-        const result = await Cloudinary.uploader.upload(item.path, {
+      images.map(async (file) => {
+        const result = await cloudinary.uploader.upload(file.path, {
           resource_type: "image",
         });
-
         return result.secure_url;
       }),
     );
 
+    // 🧠 build product
     const productData = {
-      name,
-      description,
+      name: name.trim(),
+      description: description?.trim() || "",
       category,
-      price: Number(price),
-      subCategory,
-      bestseller: bestseller === "true",
-      sizes: JSON.parse(sizes),
+      subCategory: subCategory || "",
+      price: Number(price) || 0,
+      bestseller: String(bestseller) === "true",
+      sizes: safeJsonParse(sizes, []),
       imageUrl: imagesUrl,
       date: Date.now(),
     };
 
-    const product = new productModel(productData);
+    const product = await productModel.create(productData);
 
-    await product.save();
-
-    res.json({
+    return res.status(201).json({
       success: true,
-      message: "Product added successfully",
+      message: "Product created successfully",
+      product,
     });
   } catch (error) {
-    console.log(error);
+    console.error("ADD_PRODUCT_ERROR:", error);
 
-    res.json({
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Internal server error",
     });
   }
 };
 
-// function for list product
+/**
+ * LIST PRODUCTS
+ */
 const listProduct = async (req, res) => {
   try {
-    const products = await productModel.find({});
-    res.json({ success: true, products });
+    const products = await productModel.find({}).sort({ date: -1 });
+
+    return res.status(200).json({
+      success: true,
+      products,
+    });
   } catch (error) {
-    console.log(error);
-    res.json({
+    console.error("LIST_PRODUCT_ERROR:", error);
+
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to fetch products",
     });
   }
 };
 
-// function for remove product
+/**
+ * REMOVE PRODUCT
+ */
 const removeProduct = async (req, res) => {
   try {
-    await productModel.findByIdAndDelete(req.body.id);
-    res.json({ success: true, message: "Produce Removed" });
+    const { id } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Product id is required",
+      });
+    }
+
+    const deleted = await productModel.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Product removed successfully",
+    });
   } catch (error) {
-    console.log(error);
-    res.json({
+    console.error("REMOVE_PRODUCT_ERROR:", error);
+
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Internal server error",
     });
   }
 };
 
-// function for single product info
+/**
+ * SINGLE PRODUCT
+ */
 const singleProduct = async (req, res) => {
   try {
     const { productId } = req.body;
+
+    if (!productId) {
+      return res.status(400).json({
+        success: false,
+        message: "productId is required",
+      });
+    }
+
     const product = await productModel.findById(productId);
-    res.json({ success: true, product });
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      product,
+    });
   } catch (error) {
-    res.json({
+    console.error("SINGLE_PRODUCT_ERROR:", error);
+
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Internal server error",
     });
   }
 };
 
-export { listProduct, addProduct, removeProduct, singleProduct };
+export { addProduct, listProduct, removeProduct, singleProduct };

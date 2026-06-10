@@ -13,12 +13,14 @@ const placeOrder = async (req, res) => {
       amount,
       paymentMethod: "CDD",
       payment: false,
-      date: date.now(),
+      date: Date.now(),
     };
     const newOrder = new orderModel(orderData);
     await newOrder.save();
 
-    await userModel.findByUpdate(userId, { cartData: {} });
+    await userModel.findByIdAndUpdate(userId, {
+      cartData: {},
+    });
     res.json({ success: true, message: "Order Placed" });
   } catch (error) {
     console.log(error);

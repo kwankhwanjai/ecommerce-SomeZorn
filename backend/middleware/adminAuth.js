@@ -2,24 +2,32 @@ import jwt from "jsonwebtoken";
 
 const adminAuth = async (req, res, next) => {
   try {
-    const { token } = req.headers;
-    if (!token) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
       return res.json({
         success: false,
         message: "Not Authorized Login Again",
       });
     }
-    const token_decode = jwt.verify(token, process.env.JWT_SECRET);
-    if (token_decode !== process.env.ADMIN_EMAIL + process.env.ADMIN_PASSWORD) {
+
+    const token = authHeader.split(" ")[1];
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // ✅ ใช้ role check แทน
+    if (decoded.role !== "admin") {
       return res.json({
         success: false,
-        message: "Not Authorized Login Again",
+        message: "Not Authorized - Admin Only",
       });
     }
+
+    req.admin = decoded;
     next();
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    return res.json({ success: false, message: "Invalid token" });
   }
 };
 
