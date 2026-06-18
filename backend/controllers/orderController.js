@@ -5,26 +5,38 @@ import userModel from "../models/userModel.js";
 
 const placeOrder = async (req, res) => {
   try {
-    const { userId, items, amount, address } = req.body;
+    const userId = req.userId;
+    const { items, amount, address } = req.body;
 
     const orderData = {
       userId,
       items,
       amount,
-      paymentMethod: "CDD",
+      address,
+      paymentMethod: "COD",
       payment: false,
-      date: Date.now(),
+      number: Date.now(), // ชั่วคราว
     };
+
     const newOrder = new orderModel(orderData);
+    console.log("PLACE ORDER HIT");
+    console.log(orderData);
     await newOrder.save();
 
     await userModel.findByIdAndUpdate(userId, {
       cartData: {},
     });
-    res.json({ success: true, message: "Order Placed" });
+
+    res.json({
+      success: true,
+      message: "Order Placed",
+    });
   } catch (error) {
     console.log(error);
-    res.json({ success: false, message: error.message });
+    res.json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -37,10 +49,38 @@ const placeOrderStripe = async (req, res) => {};
 const placeOrderRezorpay = async (req, res) => {};
 
 //all order data for admin panel
-const allOrders = async (req, res) => {};
+const allOrders = async (req, res) => {
+  try {
+    const orders = await orderModel.find({});
+    res.json({ success: true, orders });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 //user order data for frontend
-const userOrders = async (req, res) => {};
+const userOrders = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const orders = await orderModel.find({ userId });
+
+    res.json({
+      success: true,
+      orders,
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 //update order status for admin status
 const updateStatus = async (req, res) => {};
