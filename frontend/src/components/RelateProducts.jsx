@@ -23,7 +23,7 @@ const RelateProducts = ({ category, subCategory, currentProductId }) => {
     <section className="my-20 sm:my-24">
       <div className="mb-8 text-center">
         <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.28em] text-gray-500">
-          You may also like
+          You may also like.
         </p>
 
         <div className="text-2xl sm:text-3xl">
