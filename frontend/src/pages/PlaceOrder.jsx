@@ -149,22 +149,52 @@ const PlaceOrder = () => {
     try {
       setLoading(true);
 
-      /*
-        ตอนนี้ยังไม่มี backend order/payment จริง
-        ถ้าทำ backend แล้ว ค่อยใส่ axios.post ตรงนี้ได้ เช่น:
+      let orderItems = [];
 
-        await axios.post(
-          backendUrl + "/api/order/place",
-          { address: formData, paymentMethod: method },
-          { headers: { token } }
-        );
-      */
+      for (const items in cartItems) {
+        for (const item in cartItems[items]) {
+          if (cartItems[items][item] > 0) {
+            const itemInfo = structuredClone(
+              products.find((p) => p._id === items),
+            );
 
-      toast.success("Order placed successfully");
-      navigate("/orders");
+            if (itemInfo) {
+              itemInfo.size = item;
+              itemInfo.quantity = cartItems[items][item];
+              orderItems.push(itemInfo);
+            }
+          }
+        }
+      }
+
+      const orderData = {
+        address: formData,
+        items: orderItems,
+        amount: getCartAmount() + delivery_fee,
+        paymentMethod: method,
+        number: formData.phone,
+      };
+
+      const response = await axios.post(
+        backendUrl + "/api/order/place",
+        orderData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (response.data.success) {
+        setCartItems({});
+        toast.success("Order placed successfully");
+        navigate("/orders");
+      } else {
+        toast.error(response.data.message);
+      }
     } catch (error) {
       console.log(error);
-      toast.error("Unable to place order. Please try again.");
+      toast.error("Unable to place order");
     } finally {
       setLoading(false);
     }
