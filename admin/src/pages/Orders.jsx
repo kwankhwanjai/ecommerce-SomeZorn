@@ -35,7 +35,7 @@ const Orders = ({ token }) => {
 
   return (
     <div>
-      <h3>Order Page</h3>
+      <h3>Order Page.</h3>
 
       <div>
         {orders?.map((order) => (
