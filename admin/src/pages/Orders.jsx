@@ -8,23 +8,32 @@ const Orders = ({ token }) => {
   const [orders, setOrders] = useState([]);
 
   const fetchAllOrders = async () => {
+    console.log("TOKEN:", token);
+
     if (!token) return;
 
     try {
+      const token = localStorage.getItem("adminToken");
+
       const response = await axios.post(
         `${backendUrl}/api/order/list`,
         {},
         {
-          headers: { token },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
       );
+      console.log("ORDER RESPONSE:", response.data);
 
       if (response.data.success) {
+        console.log("ORDERS:", response.data.orders);
         setOrders(response.data.orders);
       } else {
         toast.error(response.data.message);
       }
     } catch (error) {
+      console.log("ORDER ERROR:", error);
       toast.error(error.message);
     }
   };
@@ -35,8 +44,8 @@ const Orders = ({ token }) => {
 
   return (
     <div>
+      {" "}
       <h3>Order Page</h3>
-
       <div>
         {orders?.map((order) => (
           <div key={order._id}>
