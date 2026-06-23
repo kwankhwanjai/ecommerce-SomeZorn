@@ -90,7 +90,7 @@ const Login = ({ setToken }) => {
       );
 
       if (data?.success && data?.token) {
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("adminToken", data.token);
         setToken(data.token);
       } else {
         triggerAngry();
