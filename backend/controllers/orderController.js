@@ -15,7 +15,7 @@ const placeOrder = async (req, res) => {
       address,
       paymentMethod: "COD",
       payment: false,
-      number: Date.now(), // ชั่วคราว
+      date: Date.now(),
     };
 
     const newOrder = new orderModel(orderData);
