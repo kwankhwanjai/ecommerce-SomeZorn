@@ -15,3 +15,10 @@ textarea {
   background-color: #a3b565;
   border: #c586a5;
 }
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
