@@ -106,7 +106,28 @@ const PlaceOrder = () => {
 
           break;
         }
+        case "stripe":
+          {
+            const responseStripe = await axios.post(
+              backendUrl + "/api/order/stripe",
+              orderData,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              },
+            );
 
+            if (responseStripe.data.success) {
+              const { session_url } = responseStripe.data;
+              window.location.replace(session_url);
+            } else {
+              toast.error(responseStripe.data.message);
+            }
+
+            break;
+          }
+          break;
         default:
           break;
       }
@@ -143,7 +164,6 @@ const PlaceOrder = () => {
 
   const onPlaceOrder = async () => {
     if (loading) return;
-
     if (!validateForm()) return;
 
     try {
@@ -171,26 +191,44 @@ const PlaceOrder = () => {
         address: formData,
         items: orderItems,
         amount: getCartAmount() + delivery_fee,
-        paymentMethod: method,
-        number: formData.phone,
       };
 
-      const response = await axios.post(
-        backendUrl + "/api/order/place",
-        orderData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
+      if (method === "cod") {
+        const response = await axios.post(
+          backendUrl + "/api/order/place",
+          orderData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        },
-      );
+        );
 
-      if (response.data.success) {
-        setCartItems({});
-        toast.success("Order placed successfully");
-        navigate("/orders");
-      } else {
-        toast.error(response.data.message);
+        if (response.data.success) {
+          setCartItems({});
+          toast.success("Order placed successfully");
+          navigate("/orders");
+        } else {
+          toast.error(response.data.message);
+        }
+      } else if (method === "stripe") {
+        const response = await axios.post(
+          backendUrl + "/api/order/stripe",
+          orderData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        console.log(response.data);
+
+        if (response.data.success) {
+          window.location.href = response.data.session_url;
+        } else {
+          toast.error(response.data.message);
+        }
       }
     } catch (error) {
       console.log(error);
